@@ -1,0 +1,4 @@
+Id	Prerequiste_Packges	Version
+1	python			    3.12.5
+2	aiml			    0.9.2
+3	requests		    2.32.2
