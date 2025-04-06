@@ -8,25 +8,28 @@ kernel.respond("LOAD AIML B")
 
 # Replace with your actual API keys
 SPOONACULAR_API_KEY = 'bdf93e0f01ea4e8e88713289d1c79abf'
-WEATHER_API_KEY = 'f7efff2c055cf4815a2b09b14dea96af'
+WEATHER_API_KEY = '8fd2f09c00a34ad4981234752250504'
 
 BASE_URL_SPOONACULAR = 'https://api.spoonacular.com/recipes'
-BASE_URL_WEATHER = 'https://api.openweathermap.org/data/2.5/weather'
+BASE_URL_WEATHER = 'http://api.weatherapi.com/v1/current.json'
 
 def get_weather(city):
     try:
         response = requests.get(BASE_URL_WEATHER, params={
-            'q': city,
-            'appid': WEATHER_API_KEY,
-            'units': 'metric'
+            'key': WEATHER_API_KEY,
+            'q': city
         })
         data = response.json()
-        if data.get('cod') == 200:
-            temp = data['main']['temp']
-            weather = data['weather'][0]['description']
-            return temp, weather
+        if data.get('error'):
+            return None, f"Error: {data['error']['message']}"
         else:
-            return None, "Sorry, I couldn't fetch the weather information."
+            temp = data['current']['temp_c']
+            weather = data['current']['condition']['text']
+            location = data['location']
+            city_name = location['name']
+            region = location['region']
+            country = location['country']
+            return temp, weather, city_name, region, country
     except Exception as e:
         return None, f"An error occurred: {e}"
 
@@ -78,10 +81,10 @@ while True:
     if input_text == "what should i eat":
         print(">Foodie: Hmm! Lemme see... Give me your location.")
         city = input(">Human: ").strip()
-        temp, weather = get_weather(city)
+        temp, weather, city_name, region, country = get_weather(city)  # Unpack all returned values
         if temp is not None:
             food_suggestion = suggest_food_based_on_weather(temp)
-            print(f">Foodie: According to your location, {city}, where the weather is {temp}°C ({weather}), you should eat something like: {food_suggestion}")
+            print(f">Foodie: According to your location, {city_name}, {region}, {country}, where the weather is {temp}°C ({weather}), you should eat something like: {food_suggestion}")
         else:
             print(f">Foodie: {weather}")
     elif 'recipe' in input_text:
